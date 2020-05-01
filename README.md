@@ -1,5 +1,9 @@
 # excode
 
+## This fork of nschloe/excode
+
+The intent of the fork is to add a "--no-test" option that literally just extracts the code without wrapping them in test functions.
+
 [![CircleCI](https://img.shields.io/circleci/project/github/nschloe/excode/master.svg)](https://circleci.com/gh/nschloe/excode)
 [![codecov](https://codecov.io/gh/nschloe/excode/branch/master/graph/badge.svg)](https://codecov.io/gh/nschloe/excode)
 [![PyPi Version](https://img.shields.io/pypi/v/excode.svg)](https://pypi.python.org/pypi/excode)
