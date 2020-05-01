@@ -41,20 +41,35 @@ def extract(f, filter=None):
     return code_blocks
 
 
-def write(f, code_blocks, prefix="test"):
+def write(f, code_blocks, prefix="test", tests=True):
+    asterisk_imports = []
+    clean_code_blocks = []
+
+    # IF TESTS TRUE
     # We'd like to put all code blocks in one file, each in separate test*()
     # functions (for them to be picked up by pytest, for example), but
     # asterisk imports are forbidden in subfunctions. Hence, parse for those
     # imports and put them at the beginning of the output file.
-    asterisk_imports = []
-    clean_code_blocks = []
+
+    # IF TESTS FALSE
+    # We'd like a single complete script in one file, with all imports at
+    # the top, regardless of asterisks.
+
     for code_block in code_blocks:
         clean_code_block = []
         for line in code_block.split("\n"):
-            if re.match("\\s*from\\s+[^\\s]+\\s+import\\s+\\*", line):
-                asterisk_imports.append(line)
+            if tests:
+                if re.match("\\s*from\\s+[^\\s]+\\s+import\\s+\\*", line):
+                    asterisk_imports.append(line)
+                else:
+                    clean_code_block.append(line)
             else:
-                clean_code_block.append(line)
+                if re.match("\\s*import", line):
+                    asterisk_imports.append(line)
+                elif re.match("\\s*from\\s+[^\\s]+\\s+import", line):
+                    asterisk_imports.append(line)
+                else:
+                    clean_code_block.append(line)
         clean_code_blocks.append("\n".join(clean_code_block))
     # make list unique
     asterisk_imports = list(set(asterisk_imports))
@@ -66,8 +81,12 @@ def write(f, code_blocks, prefix="test"):
     fun_strings = []
     for k, code_block in enumerate(clean_code_blocks):
         fun_strings.append("")
-        fun_strings[-1] += "def {}{}():\n".format(prefix, k)
-        fun_strings[-1] += indent(code_block, 4)
-        fun_strings[-1] += "    return\n"
+        if tests:
+            fun_strings[-1] += "def {}{}():\n".format(prefix, k)
+            fun_strings[-1] += indent(code_block, 4)
+            fun_strings[-1] += "    return\n"
+        else:
+            fun_strings[-1] += code_block
+            fun_strings[-1] += "\n"
     f.write("\n\n".join(fun_strings))
     return
